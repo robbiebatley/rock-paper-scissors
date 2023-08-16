@@ -1,4 +1,5 @@
 
+    
 const Choices = {
     Rock: "Rock",
     Paper: "Paper",
@@ -22,21 +23,6 @@ function getComputerChoice(){
     }
 }
 
-function cleanChoice(s){
-   let out = s.trim().toLowerCase();
-   return out.slice(0, 1).toUpperCase() + out.slice(1);
-}
-
-function getPlayerChoice(){
-    let choice = "";
-    const valid_choices = Object.keys(Choices); 
-    while (!valid_choices.includes(choice)){
-        choice = prompt("Enter rock, paper or scissors");
-        choice = cleanChoice(choice);
-    }
-    return Choices[choice];
-}
-
 function determineOutcome(player, computer){
     if (player === computer){
         return Outcome.Draw;
@@ -51,34 +37,62 @@ function determineOutcome(player, computer){
     }
 }
 
-function playRound(player, computer){
-    const outcome = determineOutcome(player, computer);
-    if (outcome === Outcome.Loss) {
-        console.log(`You lose! ${computer} beats ${player}`);
-    } else if (outcome === Outcome.Draw) {
-        console.log(`You drew!`);
-    } else {
-        console.log(`You won! ${player} beats ${computer}`);
+class Game {
+    constructor() {
+        this.playerScore = 0;
+        this.computerScore = 0;
     }
-    return outcome;
+    playRound(playerChoice) {
+        this.playerChoice = playerChoice;
+        this.computerChoice = getComputerChoice();
+        this.outcome = determineOutcome(this.playerChoice, this.computerChoice);
+        if (this.outcome === Outcome.Win){
+            this.playerScore++;
+            return  `You won! ${this.playerChoice} beats ${this.computerChoice}`;
+        } else if (this.outcome === Outcome.Loss){
+            this.computerScore++;
+            return `You lose! ${this.computerChoice} beats ${this.playerChoice}`;
+        } else {
+            return `You drew!`;
+        }
+    }
+    isGameOver() {
+        return (this.playerScore >= 5 || this.computerScore >= 5);
+    }
+    gameOverMessage() {
+        if (this.playerScore >= 5){
+            return  "Game over - You Won!";
+        } else if (this.computerScore >= 5){
+            return  "Game over - You Lost.";
+        }
+    }
+}
+ 
+const game = new Game();
+
+const outcome = document.querySelector(".outcome");
+const playerScoreSpan = document.querySelector("#player-score");
+const computerScoreSpan = document.querySelector("#computer-score");
+
+function playRound(e){
+
+    if (game.isGameOver()) return null;
+
+    const playerChoice = e.target.id;
+    outcome.innerHTML = game.playRound(playerChoice);
+
+    playerScoreSpan.innerText = game.playerScore;
+    computerScoreSpan.innerText = game.computerScore;
+
+    if (game.isGameOver()){
+        outcome.innerText = game.gameOverMessage();
+        outcome.style.fontSize = "24px";
+        outcome.style.color = "red";
+    }
 }
 
-function game(){
-    let score = 0;
-    let round = 0;
-    while (round < 5) {
-        round += 1;
-        console.log("Round ", round);
-        const player_choice = getPlayerChoice();
-        const computer_choice = getComputerChoice();
-        score += playRound(player_choice, computer_choice);
-    }
-    if (score > 0) {
-        console.log("Game over - you won!");
-    } else if (score < 0) {
-        console.log("Game over - you lost.");
-    } else {
-        console.log("Game over - you drew.");
-    }
-}
+document
+    .querySelectorAll("button")
+    .forEach(btn => btn.addEventListener("click", playRound));
+
 
